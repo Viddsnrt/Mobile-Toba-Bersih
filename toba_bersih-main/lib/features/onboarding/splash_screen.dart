@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:toba_bersih/features/onboarding/onboarding_screen.dart'; // Sesuaikan nama package
 import 'dart:async';
+
+// Import file LoginScreen-nya
+import '../../auth/login_screen.dart'; 
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -13,12 +15,14 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Timer 3 detik sebelum pindah ke Onboarding
+    // Timer 3 detik sebelum pindah ke Login
     Timer(const Duration(seconds: 3), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const OnboardingScreen()),
-      );
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+      }
     });
   }
 

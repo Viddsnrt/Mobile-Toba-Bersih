@@ -16,7 +16,7 @@ class TobaBersihApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Toba Bersih',
-      debugShowCheckedModeBanner: false,
+      debugShowCheckedModeBanner: false,  
       theme: ThemeData(
         primarySwatch: Colors.green,
         scaffoldBackgroundColor: Colors.grey[100],

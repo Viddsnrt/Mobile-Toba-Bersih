@@ -1,4 +1,11 @@
 import 'package:flutter/material.dart';
+// Sesuaikan import path dengan struktur foldermu jika diperlukan
+import 'edit_profile_screen.dart';
+import 'notification_settings_screen.dart';
+import 'privacy_policy_screen.dart';
+import 'help_center_screen.dart';
+import 'about_screen.dart';
+import '/auth/login_screen.dart'; 
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -8,7 +15,7 @@ class ProfileScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profil Saya'),
-        backgroundColor: Colors.green[700],
+        backgroundColor: Colors.green,
         foregroundColor: Colors.white,
         elevation: 0,
       ),
@@ -24,11 +31,10 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  // Widget untuk Header Profil (Foto, Nama, Info)
   Widget _buildProfileHeader() {
     return Container(
       width: double.infinity,
-      color: Colors.green[700],
+      color: Colors.green,
       padding: const EdgeInsets.only(bottom: 30, top: 10),
       child: Column(
         children: [
@@ -39,7 +45,6 @@ class ProfileScreen extends StatelessWidget {
                 radius: 50,
                 backgroundColor: Colors.white,
                 child: Icon(Icons.person, size: 60, color: Colors.grey),
-                // backgroundImage: AssetImage('assets/profile.jpg'), // Hapus komentar ini jika ada gambar
               ),
               Container(
                 padding: const EdgeInsets.all(4),
@@ -50,7 +55,7 @@ class ProfileScreen extends StatelessWidget {
                 child: Icon(
                   Icons.camera_alt,
                   size: 20,
-                  color: Colors.green[700],
+                  color: Colors.green,
                 ),
               ),
             ],
@@ -67,19 +72,18 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             '+62 812-3456-7890',
-            style: TextStyle(fontSize: 14, color: Colors.green[100]),
+            style: TextStyle(fontSize: 14, color: Colors.green),
           ),
           const SizedBox(height: 4),
           Text(
             'Balige Kota, Kab. Toba',
-            style: TextStyle(fontSize: 14, color: Colors.green[100]),
+            style: TextStyle(fontSize: 14, color: Colors.green),
           ),
         ],
       ),
     );
   }
 
-  // Widget untuk Daftar Menu Pengaturan
   Widget _buildMenuSection(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -96,10 +100,16 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _buildListTile(Icons.person_outline, 'Edit Profil', () {
-            // TODO: Navigasi ke Edit Profil
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const EditProfileScreen()),
+            );
           }),
           _buildListTile(Icons.notifications_none, 'Pengaturan Notifikasi', () {
-            // TODO: Buka Pengaturan Notifikasi
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const NotificationSettingsScreen()),
+            );
           }),
           const Divider(height: 32),
 
@@ -112,26 +122,40 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          _buildListTile(Icons.privacy_tip_outlined, 'Privacy Policy', () {}),
-          _buildListTile(Icons.help_outline, 'Help Center', () {}),
-          _buildListTile(Icons.info_outline, 'Tentang Aplikasi', () {}),
+          _buildListTile(Icons.privacy_tip_outlined, 'Privacy Policy', () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const PrivacyPolicyScreen()),
+            );
+          }),
+          _buildListTile(Icons.help_outline, 'Help Center', () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const HelpCenterScreen()),
+            );
+          }),
+          _buildListTile(Icons.info_outline, 'Tentang Aplikasi', () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AboutScreen()),
+            );
+          }),
           const Divider(height: 32),
 
-          // Tombol Logout Khusus
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.red[50],
+                color: Colors.red,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(Icons.logout, color: Colors.red[700]),
+              child: Icon(Icons.logout, color: Colors.red),
             ),
             title: Text(
               'Logout',
               style: TextStyle(
-                color: Colors.red[700],
+                color: Colors.red,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -141,8 +165,11 @@ class ProfileScreen extends StatelessWidget {
               color: Colors.grey,
             ),
             onTap: () {
-              // TODO: Implementasi logika logout ke API/Supabase
-              print("Proses Logout...");
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+                (route) => false,
+              );
             },
           ),
           const SizedBox(height: 30),
@@ -151,17 +178,16 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  // Helper Widget agar kode menu tidak berulang
   Widget _buildListTile(IconData icon, String title, VoidCallback onTap) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.green[50],
+          color: Colors.green,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(icon, color: Colors.green[700]),
+        child: Icon(icon, color: Colors.green),
       ),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
       trailing: const Icon(
