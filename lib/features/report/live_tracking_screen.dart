@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 // 🔥 IMPORT SOCKET.IO UNTUK MENERIMA LOKASI REAL-TIME
-import 'package:socket_io_client/socket_io_client.dart' as IO; 
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class LiveTrackingScreen extends StatefulWidget {
   final double truckLat;
@@ -23,9 +23,9 @@ class LiveTrackingScreen extends StatefulWidget {
 class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
   late LatLng _currentTruckPos;
   final MapController _mapController = MapController();
-  
-  IO.Socket? socket; 
-  final String ipAddress = '10.152.199.195'; // Sesuaikan dengan IP Servermu
+
+  IO.Socket? socket;
+  final String ipAddress = ' 10.215.41.195'; // Sesuaikan dengan IP Servermu
 
   @override
   void initState() {
@@ -51,9 +51,9 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
           // Update titik koordinat truk dengan data terbaru dari server
           _currentTruckPos = LatLng(
             double.parse(data['latitude'].toString()),
-            double.parse(data['longitude'].toString())
+            double.parse(data['longitude'].toString()),
           );
-          
+
           // 🔥 Pindahkan kamera otomatis mengikuti pergerakan truk
           _mapController.move(_currentTruckPos, _mapController.camera.zoom);
         });
@@ -72,7 +72,10 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Lacak Truk DLH', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
+        title: const Text(
+          'Lacak Truk DLH',
+          style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
+        ),
         backgroundColor: Colors.green.shade700,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -82,7 +85,8 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
         children: [
           // 1. LAYER PETA
           FlutterMap(
-            mapController: _mapController, // Pasang controller untuk menggerakkan kamera
+            mapController:
+                _mapController, // Pasang controller untuk menggerakkan kamera
             options: MapOptions(
               initialCenter: _currentTruckPos,
               initialZoom: 16.0,
@@ -101,7 +105,11 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                     height: 60,
                     child: const Column(
                       children: [
-                        Icon(Icons.local_shipping_rounded, color: Colors.green, size: 36),
+                        Icon(
+                          Icons.local_shipping_rounded,
+                          color: Colors.green,
+                          size: 36,
+                        ),
                       ],
                     ),
                   ),
@@ -119,35 +127,76 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
               padding: const EdgeInsets.all(24),
               decoration: const BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.only(topLeft: Radius.circular(32), topRight: Radius.circular(32)),
-                boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 20, offset: Offset(0, -5))],
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(32),
+                  topRight: Radius.circular(32),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 20,
+                    offset: Offset(0, -5),
+                  ),
+                ],
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(width: 40, height: 5, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(10))),
+                  Container(
+                    width: 40,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
                   const SizedBox(height: 24),
-                  
+
                   Row(
                     children: [
                       Container(
                         padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(color: Colors.green.shade50, shape: BoxShape.circle),
-                        child: Icon(Icons.local_shipping_rounded, color: Colors.green.shade700, size: 30),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade50,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.local_shipping_rounded,
+                          color: Colors.green.shade700,
+                          size: 30,
+                        ),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(widget.truckName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.black87)),
+                            Text(
+                              widget.truckName,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.black87,
+                              ),
+                            ),
                             const SizedBox(height: 4),
                             // Indikator animasi berkedip (opsional, memberikan kesan live)
                             Row(
                               children: [
-                                const Icon(Icons.sensors_rounded, size: 14, color: Colors.blue),
+                                const Icon(
+                                  Icons.sensors_rounded,
+                                  size: 14,
+                                  color: Colors.blue,
+                                ),
                                 const SizedBox(width: 4),
-                                Text('Live GPS Aktif', style: TextStyle(color: Colors.blue.shade700, fontSize: 12, fontWeight: FontWeight.w800)),
+                                Text(
+                                  'Live GPS Aktif',
+                                  style: TextStyle(
+                                    color: Colors.blue.shade700,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
                               ],
                             ),
                           ],
@@ -156,23 +205,35 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  
+
                   SizedBox(
                     width: double.infinity,
                     height: 50,
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green.shade700,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                         elevation: 0,
                       ),
                       onPressed: () {
                         Navigator.pop(context);
                       },
-                      icon: const Icon(Icons.check_circle_rounded, color: Colors.white),
-                      label: const Text('Tutup Pelacakan', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 15)),
+                      icon: const Icon(
+                        Icons.check_circle_rounded,
+                        color: Colors.white,
+                      ),
+                      label: const Text(
+                        'Tutup Pelacakan',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          fontSize: 15,
+                        ),
+                      ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
