@@ -3,8 +3,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:shared_preferences/shared_preferences.dart'; // 🔥 IMPORT INI UNTUK AMBIL ID USER
 
-// 🔥 Pastikan file ini ada di folder yang sama
+// Pastikan file ini ada di folder yang sama
 import 'report_detail_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -19,7 +20,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   bool _isLoading = true;
 
   IO.Socket? socket;
-  final String ipAddress = '10.138.10.195';
+  final String ipAddress = '10.215.41.195';
 
   @override
   void initState() {
@@ -65,8 +66,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Future<void> _fetchData() async {
     setState(() => _isLoading = true);
     try {
+      // 🔥 1. AMBIL ID USER YANG SEDANG LOGIN
+      final prefs = await SharedPreferences.getInstance();
+      final String? userId = prefs.getString('userId');
+
+      if (userId == null) {
+        debugPrint("User ID tidak ditemukan!");
+        return; // Jangan lanjutkan jika tidak ada user yang login
+      }
+
+      // 🔥 2. GUNAKAN ID TERSEBUT DI URL API
       final response = await http.get(
-        Uri.parse('http://$ipAddress:5000/api/laporan/user/120'),
+        Uri.parse('http://$ipAddress:5000/api/laporan/user/$userId'),
       );
 
       if (response.statusCode == 200) {
@@ -119,16 +130,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
           foregroundColor: Colors.white,
           elevation: 0,
           centerTitle: true,
-          // 🔥 PERBAIKAN TAB BAR ADA DI SINI
           bottom: const TabBar(
-            // isScrollable dihilangkan agar tab otomatis membagi rata lebar layar
-            labelColor:
-                Colors.white, // Memaksa teks yang dipilih berwarna putih
-            unselectedLabelColor:
-                Colors.white70, // Teks yang tidak dipilih berwarna putih pudar
+            labelColor: Colors.white, 
+            unselectedLabelColor: Colors.white70, 
             indicatorColor: Colors.white,
             indicatorWeight: 4,
-            labelPadding: EdgeInsets.zero, // Membuang padding berlebih
+            labelPadding: EdgeInsets.zero, 
             labelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
             unselectedLabelStyle: TextStyle(
               fontWeight: FontWeight.w500,
@@ -136,7 +143,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ),
             splashFactory: NoSplash.splashFactory,
             tabs: [
-              Tab(text: 'Semua'), // Dipersingkat agar tidak kepanjangan
+              Tab(text: 'Semua'), 
               Tab(text: 'Dilaporkan'),
               Tab(text: 'Diproses'),
               Tab(text: 'Selesai'),
@@ -269,9 +276,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
       }
     }
 
-    String jenisSampah = report['jenisSampah'] ?? 'UMUM';
-    jenisSampah = jenisSampah.replaceAll('_', ' ');
-
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -314,14 +318,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       borderRadius: BorderRadius.circular(16),
                       child:
                           report['photoUrl'] != null &&
-                              report['photoUrl'].toString().isNotEmpty
-                          ? Image.network(
-                              report['photoUrl'],
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  _buildPlaceholderImage(),
-                            )
-                          : _buildPlaceholderImage(),
+                                  report['photoUrl'].toString().isNotEmpty
+                              ? Image.network(
+                                  report['photoUrl'],
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      _buildPlaceholderImage(),
+                                )
+                              : _buildPlaceholderImage(),
                     ),
                   ),
                 ),
@@ -356,7 +360,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              jenisSampah,
+                              // 🔥 PERBAIKAN: Ubah menjadi label generik 'Aduan Warga'
+                              "Aduan Warga",
                               style: TextStyle(
                                 fontSize: 9,
                                 color: Colors.green.shade800,
@@ -370,7 +375,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       const SizedBox(height: 8),
 
                       Text(
-                        report['description'] ?? 'Laporan sampah di area ini',
+                        report['description'] ?? 'Laporan tanpa deskripsi',
                         style: const TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 14,

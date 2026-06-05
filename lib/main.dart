@@ -27,21 +27,40 @@ class DashboardProvider extends ChangeNotifier {
   int _laporanSelesai = 0;
   bool _isLoading = true;
 
+  // 🔥 TAMBAHAN VARIABEL UNTUK DATA USER DINAMIS
+  String _userAddress = "Memuat lokasi..."; 
+  String _userName = "Warga Toba";
+
   List<dynamic> get reports => _reports;
   int get totalLaporan => _totalLaporan;
   int get laporanDiproses => _laporanDiproses;
   int get laporanSelesai => _laporanSelesai;
   bool get isLoading => _isLoading;
+  String get userAddress => _userAddress; // Getter alamat
+  String get userName => _userName;       // Getter nama
 
-  final String ipAddress = '10.138.10.195';
+  final String ipAddress = '10.215.41.195';
 
   Future<void> fetchDashboardData() async {
     _isLoading = true;
-    notifyListeners(); // Memberitahu UI untuk loading
+    notifyListeners(); 
 
     try {
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       final String? savedUserId = prefs.getString('userId');
+      
+      // 🔥 AMBIL DATA DARI PENYIMPANAN LOKAL (Disimpan saat Login/Edit Profil)
+      _userName = prefs.getString('user_name') ?? "Warga Toba";
+      
+      // Ambil nama jalan detail ATAU setidaknya nama kelurahannya
+      String detailAddress = prefs.getString('user_address') ?? '';
+      String wilayahName = prefs.getString('user_wilayah_name') ?? 'Balige';
+      
+      if (detailAddress.isNotEmpty) {
+        _userAddress = detailAddress; // Prioritaskan alamat detail
+      } else {
+        _userAddress = wilayahName;
+      }
 
       if (savedUserId == null) return;
 
@@ -55,23 +74,14 @@ class DashboardProvider extends ChangeNotifier {
 
         _reports = reportsData;
         _totalLaporan = reportsData.length;
-        _laporanDiproses = reportsData
-            .where(
-              (r) =>
-                  r['status'] == 'PENDING' ||
-                  r['status'] == 'DIPROSES' ||
-                  r['status'] == 'DITINDAKLANJUTI',
-            )
-            .length;
-        _laporanSelesai = reportsData
-            .where((r) => r['status'] == 'SELESAI')
-            .length;
+        _laporanDiproses = reportsData.where((r) => r['status'] == 'PENDING' || r['status'] == 'DIPROSES' || r['status'] == 'DITINDAKLANJUTI').length;
+        _laporanSelesai = reportsData.where((r) => r['status'] == 'SELESAI').length;
       }
     } catch (e) {
       debugPrint("Error fetching dashboard: $e");
     } finally {
       _isLoading = false;
-      notifyListeners(); // Memberitahu UI bahwa data siap
+      notifyListeners(); 
     }
   }
 }
@@ -323,25 +333,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        elevation: 0,
-        backgroundColor: const Color(0xFF2D7B3F),
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Halo, Warga Toba! 👋',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-                color: Colors.white,
-              ),
-            ),
-            Text(
-              'Mari jaga kebersihan lingkungan',
-              style: TextStyle(fontSize: 12, color: Colors.white70),
-            ),
-          ],
+  elevation: 0,
+  backgroundColor: const Color(0xFF2D7B3F),
+  title: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        // 🔥 PERBAIKAN: Mengambil Nama User dari Provider
+        'Halo, ${provider.userName.split(' ')[0]}! 👋', // .split(' ')[0] untuk ambil nama panggilan depan saja
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w900,
+          color: Colors.white,
         ),
+      ),
+      const Text(
+        'Mari jaga kebersihan lingkungan',
+        style: TextStyle(fontSize: 12, color: Colors.white70),
+      ),
+    ],
+  ),
         actions: [
           IconButton(
             icon: const Icon(
@@ -455,6 +466,9 @@ class TrackingWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 🔥 Panggil provider untuk mendapatkan alamat dinamis
+    final provider = context.watch<DashboardProvider>();
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -469,34 +483,47 @@ class TrackingWidget extends StatelessWidget {
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.location_on_rounded, color: Color(0xFF2D7B3F)),
-              SizedBox(width: 10),
-              Text(
-                'Truk DLH #02 - Rute Amplas',
-                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+              const Icon(Icons.location_on_rounded, color: Color(0xFF2D7B3F)),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  // 🔥 TAMPILKAN ALAMAT ASLI DARI USER
+                  'Rute Truk: ${provider.userAddress}',
+                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
           const Divider(height: 24),
-          ElevatedButton.icon(
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const LiveTrackingScreen(
-                  truckLat: 2.33,
-                  truckLng: 99.06,
-                  truckName: 'Truk DLH',
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => LiveTrackingScreen(
+                    truckLat: 2.3333, // Sementara dummy sampai API Get Truck Location selesai
+                    truckLng: 99.0667,
+                    truckName: 'Truk DLH Wilayah ${provider.userAddress}', // Nama truk dinamis
+                  ),
                 ),
               ),
-            ),
-            icon: const Icon(Icons.map_rounded),
-            label: const Text('Lacak Truk'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2D7B3F),
-              foregroundColor: Colors.white,
+              icon: const Icon(Icons.map_rounded),
+              label: const Text('Lacak Truk Bertugas', style: TextStyle(fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2D7B3F),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
             ),
           ),
         ],

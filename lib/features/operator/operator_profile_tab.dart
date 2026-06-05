@@ -6,8 +6,6 @@ import 'dart:convert';
 import 'package:toba_bersih/auth/login_screen.dart'; 
 import 'package:toba_bersih/features/profile/privacy_policy_screen.dart'; 
 import 'package:toba_bersih/features/profile/help_center_screen.dart';
-// Sesuaikan import di bawah ini jika DriverHistoryScreen ada di file terpisah. 
-// Jika di file yang sama, tidak perlu import.
 
 class OperatorProfileTab extends StatefulWidget {
   final String driverId;
@@ -20,7 +18,7 @@ class OperatorProfileTab extends StatefulWidget {
 class _OperatorProfileTabState extends State<OperatorProfileTab> {
   String _driverName = "Supir Toba";
   List<dynamic> _tasks = []; 
-  final String ipAddress = '10.72.28.195'; // Ganti jika IP berubah
+  final String ipAddress = '10.215.41.195'; // Ganti jika IP berubah
 
   @override
   void initState() {
@@ -36,10 +34,17 @@ class _OperatorProfileTabState extends State<OperatorProfileTab> {
 
   Future<void> _fetchTaskStats() async {
     try {
-      final response = await http.get(Uri.parse('http://$ipAddress:5000/api/driver/${widget.driverId}/tasks'));
+      // 🔥 PERBAIKAN: Arahkan URL ke endpoint penugasan dengan query driverId
+      final response = await http.get(Uri.parse('http://$ipAddress:5000/api/penugasan?driverId=${widget.driverId}'));
+      
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        if (mounted) setState(() => _tasks = data['data'] ?? []);
+        if (mounted) {
+          setState(() {
+            // Sesuai dengan pembungkusan getSemuaPenugasan yang mengembalikan { success: true, data: [...] }
+            _tasks = data['data'] ?? []; 
+          });
+        }
       }
     } catch (e) {
       debugPrint("Stat Error: $e");
@@ -144,6 +149,7 @@ class _OperatorProfileTabState extends State<OperatorProfileTab> {
               ),
             ),
             
+            // STAT CARD PANEL
             Transform.translate(
               offset: const Offset(0, -25),
               child: Padding(
@@ -166,7 +172,7 @@ class _OperatorProfileTabState extends State<OperatorProfileTab> {
                   Text('Operasional & Kendaraan', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Colors.grey.shade500, letterSpacing: 1)),
                   const SizedBox(height: 12),
                   _buildProfileMenu(icon: Icons.history_rounded, title: 'Riwayat Tugas Selesai', color: Colors.blueGrey, onTap: () {
-                    // 🔥 BERIKAN HANYA DATA TUGAS YANG SUDAH SELESAI
+                    // 🔥 Kirim hanya data tugas yang berstatus SELESAI
                     Navigator.push(context, MaterialPageRoute(builder: (context) => DriverHistoryScreen(
                       completedTasks: _tasks.where((t) => t['status'] == 'SELESAI').toList()
                     )));
@@ -236,18 +242,29 @@ class _OperatorProfileTabState extends State<OperatorProfileTab> {
 }
 
 // ==============================================================
-// 🔥 HALAMAN RIWAYAT TUGAS SUPIR 
+// 🔥 HALAMAN RIWAYAT TUGAS SUPIR (SUDAH FIXED BEBAS ERROR)
 // ==============================================================
 class DriverHistoryScreen extends StatelessWidget {
   final List<dynamic> completedTasks;
   const DriverHistoryScreen({super.key, required this.completedTasks});
 
+  // Helper untuk format tanggal sederhana
+  String _parseDate(String? dateStr) {
+    if (dateStr == null) return "-";
+    try {
+      final date = DateTime.parse(dateStr);
+      return "${date.day}/${date.month}/${date.year} - ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}";
+    } catch (_) {
+      return dateStr;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
-        title: const Text('Riwayat Tugas', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
+        title: const Text('Riwayat Tugas Selesai', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
         backgroundColor: Colors.blueGrey.shade800,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -258,33 +275,131 @@ class DriverHistoryScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.history_rounded, size: 80, color: Colors.grey.shade300),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(color: Colors.grey.shade200, shape: BoxShape.circle),
+                  child: Icon(Icons.history_rounded, size: 60, color: Colors.grey.shade400),
+                ),
                 const SizedBox(height: 16),
-                Text("Belum Ada Riwayat", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.grey.shade700)),
-                const SizedBox(height: 8),
-                Text("Anda belum menyelesaikan tugas apapun.", style: TextStyle(color: Colors.grey.shade500)),
+                Text("Belum Ada Riwayat", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.blueGrey.shade900)),
+                const SizedBox(height: 6),
+                Text("Semua tugas yang kamu selesaikan akan muncul di sini.", style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
               ],
             ),
           )
         : ListView.builder(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             itemCount: completedTasks.length,
+            physics: const BouncingScrollPhysics(),
             itemBuilder: (context, index) {
               final task = completedTasks[index];
-              return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.all(16),
-                  leading: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(color: Colors.green.shade50, shape: BoxShape.circle),
-                    child: Icon(Icons.check_circle_rounded, color: Colors.green.shade600),
-                  ),
-                  title: Text(task['location'] ?? 'Lokasi Tugas', style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: const Padding(
-                    padding: EdgeInsets.only(top: 4.0),
-                    child: Text('Tugas Selesai', style: TextStyle(color: Colors.green)),
+              final bool isAduan = task['type'] == 'ADUAN';
+              final Color badgeColor = isAduan ? Colors.orange.shade700 : Colors.indigo.shade600;
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4)),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Baris Atas: Nomor Tugas & Badge Tipe Tugas (FIXED PARAMETER)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            task['taskNumber'] != null ? '#${task['taskNumber']}' : '#NO-TASK',
+                            style: TextStyle(fontWeight: FontWeight.w900, color: Colors.grey.shade500, fontSize: 13),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(color: badgeColor.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                            child: Text(
+                              isAduan ? 'ADUAN WARGA' : 'RUTE RUTIN',
+                              style: TextStyle(color: badgeColor, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Divider(height: 20, thickness: 1),
+                      
+                      // Baris Tengah: Lokasi Penugasan
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(Icons.location_on_rounded, color: Colors.red.shade600, size: 22),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  task['location'] ?? 'Lokasi tidak spesifik',
+                                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Colors.black87),
+                                ),
+                                if (task['district'] != null) ...[
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    task['district'],
+                                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500, fontWeight: FontWeight.w500),
+                                  ),
+                                ]
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      
+                      // Kondisional Deskripsi Laporan Aduan (jika ada)
+                      if (task['description'] != null && task['description'].toString().isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(color: Colors.grey.shade50, borderRadius: BorderRadius.circular(12)),
+                          child: Text(
+                            task['description'],
+                            style: TextStyle(fontSize: 13, color: Colors.grey.shade700, fontStyle: FontStyle.italic, height: 1.3),
+                          ),
+                        ),
+                      ],
+                      
+                      const SizedBox(height: 14),
+                      
+                      // Baris Bawah: Waktu Eksekusi Selesai & Status Sukses (FIXED SPACEBETWEEN)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.calendar_today_rounded, size: 14, color: Colors.grey.shade500),
+                              const SizedBox(width: 6),
+                              Text(
+                                _parseDate(task['completedAt'] ?? task['updatedAt'] ?? task['scheduledAt']),
+                                style: TextStyle(fontSize: 12, color: Colors.grey.shade600, fontWeight: FontWeight.w600),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Icon(Icons.check_circle_rounded, color: Colors.green.shade600, size: 16),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Sukses',
+                                style: TextStyle(color: Colors.green.shade700, fontWeight: FontWeight.bold, fontSize: 13),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               );

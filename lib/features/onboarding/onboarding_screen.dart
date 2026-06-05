@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:toba_bersih/main.dart'; // Import MainScreen dari main.dart
+import 'package:toba_bersih/main.dart'; 
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -12,22 +12,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  // Data konten untuk ke-3 halaman onboarding
+  // 🔥 DATA ONBOARDING: Memasukkan ketiga gambar jpg yang kamu buat tadi
   final List<Map<String, String>> onboardingData = [
     {
       "title": "Laporkan Sampah dengan Mudah",
       "text": "Laporkan lokasi sampah di sekitar Anda melalui aplikasi dan bantu jaga kebersihan Kabupaten Toba.",
-      "icon": "phone", // Penanda untuk ikon placeholder
+      "image": "assets/images/splash1.jpg", 
     },
     {
       "title": "Pantau Pengangkutan",
       "text": "Lihat status pengangkutan sampah secara realtime di wilayah Anda.",
-      "icon": "map",
+      "image": "assets/images/splash2.jpg",
     },
     {
       "title": "Lingkungan Lebih Bersih",
       "text": "Bersama kita menjaga kebersihan Kabupaten Toba demi masa depan yang lebih hijau.",
-      "icon": "nature",
+      "image": "assets/images/splash3.jpg",
     },
   ];
 
@@ -38,7 +38,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Tombol Skip di pojok kanan atas
+            // Tombol Skip
             Align(
               alignment: Alignment.topRight,
               child: TextButton(
@@ -55,7 +55,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
             
-            // Area Konten yang bisa digeser (PageView)
+            // 🔥 AREA KONTEN (Gambar & Teks akan berganti sesuai geseran)
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
@@ -68,12 +68,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 itemBuilder: (context, index) => OnboardingContent(
                   title: onboardingData[index]["title"]!,
                   text: onboardingData[index]["text"]!,
-                  iconType: onboardingData[index]["icon"]!,
+                  imagePath: onboardingData[index]["image"]!, // Mengirim path gambar
                 ),
               ),
             ),
 
-            // Indikator Titik (Dots) dan Tombol Lanjut
+            // Indikator Titik (Dots) dan Tombol
             Padding(
               padding: const EdgeInsets.all(24.0),
               child: Column(
@@ -92,13 +92,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     child: ElevatedButton(
                       onPressed: () {
                         if (_currentPage == onboardingData.length - 1) {
-                          // Jika halaman terakhir, masuk ke MainScreen
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(builder: (context) => const MainScreen()),
                           );
                         } else {
-                          // Lanjut ke halaman berikutnya
                           _pageController.nextPage(
                             duration: const Duration(milliseconds: 300),
                             curve: Curves.ease,
@@ -130,7 +128,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  // Desain titik indikator
   AnimatedContainer buildDot({required int index}) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
@@ -145,38 +142,35 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 }
 
-// Widget untuk isi konten Onboarding
+// 🔥 WIDGET KONTEN: Bertugas merender gambar dan teks untuk setiap halaman
 class OnboardingContent extends StatelessWidget {
-  final String title, text, iconType;
+  final String title, text, imagePath;
 
   const OnboardingContent({
     super.key,
     required this.title,
     required this.text,
-    required this.iconType,
+    required this.imagePath, 
   });
 
   @override
   Widget build(BuildContext context) {
-    IconData displayIcon = Icons.image;
-    if (iconType == "phone") displayIcon = Icons.phone_android;
-    if (iconType == "map") displayIcon = Icons.map_outlined;
-    if (iconType == "nature") displayIcon = Icons.landscape;
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
       child: Column(
         children: [
           const Spacer(),
-          // PLACEHOLDER GAMBAR (Nanti bisa diganti Image.asset)
-          Container(
+          // WADAH GAMBAR
+          SizedBox(
             height: 250,
             width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
+            child: ClipRRect(
               borderRadius: BorderRadius.circular(20),
+              child: Image.asset(
+                imagePath, // Mengambil gambar sesuai halaman
+                fit: BoxFit.contain,
+              ),
             ),
-            child: Icon(displayIcon, size: 80, color: Colors.grey[400]),
           ),
           const SizedBox(height: 40),
           Text(

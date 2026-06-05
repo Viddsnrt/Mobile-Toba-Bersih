@@ -32,7 +32,7 @@ class _ReportScreenState extends State<ReportScreen>
 
   bool _isSubmitting = false;
 
-  final String ipAddress = '10.138.10.195';
+  final String ipAddress = '10.215.41.195';
 
   @override
   void initState() {
