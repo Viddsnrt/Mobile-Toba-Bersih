@@ -39,7 +39,7 @@ class DashboardProvider extends ChangeNotifier {
   String get userAddress => _userAddress; // Getter alamat
   String get userName => _userName;       // Getter nama
 
-  final String ipAddress = '10.215.41.195';
+  final String ipAddress = '10.107.61.195';
 
   Future<void> fetchDashboardData() async {
     _isLoading = true;

@@ -28,7 +28,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String? _selectedWilayahId;
   bool _isLoadingWilayah = true;
 
-  final String ipAddress = '10.215.41.195'; // Pastikan IP sesuai
+  final String ipAddress = '10.107.61.195'; // Pastikan IP sesuai
 
   @override
   void initState() {

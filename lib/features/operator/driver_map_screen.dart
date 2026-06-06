@@ -43,7 +43,7 @@ class _DriverMapScreenState extends State<DriverMapScreen> {
   List<XFile> _buktiFotoList = []; 
 
   IO.Socket? socket;
-  final String ipAddress = '10.215.41.195'; 
+  final String ipAddress = '10.107.61.195'; 
 
   @override
   void initState() {

@@ -20,7 +20,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   bool _isLoading = true;
 
   IO.Socket? socket;
-  final String ipAddress = '10.215.41.195';
+  final String ipAddress = '10.107.61.195';
 
   @override
   void initState() {
